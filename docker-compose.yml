@@ -1,0 +1,93 @@
+services:
+
+  # =========================================================
+  # MYSQL DATABASE
+  # =========================================================
+
+  db:
+    image: mysql:8.4
+    container_name: devstore-db
+    restart: unless-stopped
+
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    networks:
+      - devstore-network
+
+
+  # =========================================================
+  # DJANGO BACKEND
+  # =========================================================
+
+  backend:
+    build:
+      context: ./backand
+      dockerfile: Dockerfile
+
+    container_name: devstore-backend
+    restart: unless-stopped
+
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: 3306
+
+    depends_on:
+      - db
+
+    networks:
+      - devstore-network
+
+
+  # =========================================================
+  # REACT FRONTEND + NGINX
+  # =========================================================
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: devstore-frontend
+    restart: unless-stopped
+
+    ports:
+      - "80:80"
+
+    depends_on:
+      - backend
+
+    networks:
+      - devstore-network
+
+
+# =========================================================
+# DOCKER NETWORK
+# =========================================================
+
+networks:
+  devstore-network:
+    driver: bridge
+
+
+# =========================================================
+# MYSQL PERSISTENT VOLUME
+# =========================================================
+
+volumes:
+  mysql_data:
+    driver: local
