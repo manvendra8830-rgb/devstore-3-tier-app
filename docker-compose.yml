@@ -15,12 +15,28 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
 
-
     volumes:
       - mysql_data:/var/lib/mysql
 
     networks:
       - devstore-network
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD}"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
 
 
   # =========================================================
@@ -47,7 +63,8 @@ services:
       DB_PORT: 3306
 
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
     networks:
       - devstore-network
