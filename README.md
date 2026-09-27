@@ -69,8 +69,8 @@ The project demonstrates a practical 3-tier architecture and Docker-based deploy
 
   🛠️ Tech Stack
 
-    Frontend
-    React
+  -  Frontend
+  -  React
     Vite
     JavaScript
     CSS
